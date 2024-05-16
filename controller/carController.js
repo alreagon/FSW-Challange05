@@ -3,31 +3,17 @@ const { cars } = require("../models");
 class CarController {
   // Add cars
   static async addCars(req, res, next) {
-    let errors = [];
-    if (errors.length > 0) {
-      res.render("cars/createCar", {
-        errors,
-        url: req.url,
-        title: "Add New Car",
+    try {
+      await cars.create({
+        name: req.body.name,
+        rentPrice: req.body.rentPrice,
+        type: req.body.type,
+        image: `/upload/${req.file.filename}`,
       });
-    } else {
-      try {
-        const result = await cars.create({
-          name: req.body.name,
-          rentPrice: req.body.rentPrice,
-          type: req.body.type,
-          image: `/upload/${req.file.filename}`,
-        });
-        errors.push({ msg: "Data berhasil ditambahkan" });
-        res.render("cars/createCar", {
-          errors,
-          result,
-          url: req.url,
-          title: "Add New Car",
-        });
-      } catch (err) {
-        res.status(400).send(err);
-      }
+      // Redirect to the main page after successful addition
+      res.redirect("/");
+    } catch (err) {
+      res.status(400).send(err);
     }
   }
 
@@ -59,7 +45,6 @@ class CarController {
   // Update cars
   static async updateCars(req, res, next) {
     const id = req.params.id;
-    let errors = [];
     try {
       const result = await cars.update(
         {
@@ -73,16 +58,9 @@ class CarController {
         }
       );
       if (result == 1) {
-        errors.push({ msg: "Data berhasil terupdate" });
-        res.render("cars/updateCar", {
-          errors,
-          data: req.body,
-          title: "Update Car",
-          url: req.url,
-        });
+        res.redirect("/");
       } else {
-        res.redirect(`${id}`);
-        errors.push({ msg: "Data gagal terupdate" });
+        res.redirect(`/cars/update/${id}`);
       }
     } catch (err) {
       res.status(400).send(err);
