@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 const CarControl = require("../controller/carController");
-const uploadCar = require("../middleware/upload"); // Ensure the correct filename
+const uploadCar = require("../middleware/upload");
 
 // Client Side
 router.get("/", CarControl.getAllCars);

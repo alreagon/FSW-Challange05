@@ -1,8 +1,9 @@
 const multer = require("multer");
+
 // Storage Engine
-const storageEnggine = multer.diskStorage({
+const storageEngine = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/upload"); //directory
+    cb(null, "public/upload"); // directory
   },
   filename: (req, file, cb) => {
     cb(null, new Date().getTime() + "-" + file.originalname);
@@ -18,15 +19,17 @@ const fileFilter = (req, file, cb) => {
   ) {
     cb(null, true);
   } else {
-    cb(null, false);
+    cb(
+      new Error("Invalid file type. Only PNG, JPG, JPEG, and SVG are allowed."),
+      false
+    );
   }
 };
 
-// Single File Route Handler will receive from (multipart/formdata) and limit 2 mb
-uploadMiddleware = multer({
-  storage: storageEnggine,
+const uploadMiddleware = multer({
+  storage: storageEngine,
   fileFilter: fileFilter,
-  limits: { fileSize: "2000000" },
+  limits: { fileSize: 2000000 }, // 2MB
 }).single("image");
 
 module.exports = uploadMiddleware;

@@ -10,10 +10,9 @@ class CarController {
         type: req.body.type,
         image: `/upload/${req.file.filename}`,
       });
-      // Redirect to the main page after successful addition
-      res.redirect("/");
+      res.status(200).json({ message: "Data berhasil ditambahkan" });
     } catch (err) {
-      res.status(400).send(err);
+      res.status(400).json({ message: "Gagal menambahkan data", error: err });
     }
   }
 
@@ -46,24 +45,30 @@ class CarController {
   static async updateCars(req, res, next) {
     const id = req.params.id;
     try {
+      const existingImage = req.body.existingImage;
+      const newImage = req.file
+        ? `/upload/${req.file.filename}`
+        : existingImage;
+
       const result = await cars.update(
         {
           name: req.body.name,
           rentPrice: req.body.rentPrice,
           type: req.body.type,
-          image: `/upload/${req.file.filename}`,
+          image: newImage,
         },
         {
           where: { id: id },
         }
       );
+
       if (result == 1) {
-        res.redirect("/");
+        res.status(200).json({ message: "Data berhasil diperbarui" });
       } else {
-        res.redirect(`/cars/update/${id}`);
+        res.status(400).json({ message: "Gagal memperbarui data" });
       }
     } catch (err) {
-      res.status(400).send(err);
+      res.status(400).json({ message: "Gagal memperbarui data", error: err });
     }
   }
 

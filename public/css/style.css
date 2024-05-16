@@ -232,3 +232,9 @@ form > .row {
 .btn-outline-success {
   border: 1px solid var(--bg-success);
 }
+.btn:disabled {
+  background-color: #d6d6d6;
+  border-color: #d6d6d68a;
+  color: #fff;
+  cursor: not-allowed;
+}
