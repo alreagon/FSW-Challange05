@@ -1,4 +1,6 @@
 const { cars } = require("../models");
+const fs = require("fs");
+const path = require("path");
 
 class CarController {
   // Add cars
@@ -45,12 +47,23 @@ class CarController {
   static async updateCars(req, res, next) {
     const id = req.params.id;
     try {
-      const existingImage = req.body.existingImage;
+      const car = await cars.findByPk(id);
+      const existingImage = car.image;
       const newImage = req.file
         ? `/upload/${req.file.filename}`
         : existingImage;
 
-      const result = await cars.update(
+      // Hapus gambar lama jika ada gambar baru
+      if (req.file && existingImage) {
+        const oldImagePath = path.join(__dirname, "../public", existingImage);
+        fs.unlink(oldImagePath, (err) => {
+          if (err) {
+            console.error("Failed to delete old image:", err);
+          }
+        });
+      }
+
+      await cars.update(
         {
           name: req.body.name,
           rentPrice: req.body.rentPrice,
@@ -62,11 +75,7 @@ class CarController {
         }
       );
 
-      if (result == 1) {
-        res.status(200).json({ message: "Data berhasil diperbarui" });
-      } else {
-        res.status(400).json({ message: "Gagal memperbarui data" });
-      }
+      res.status(200).json({ message: "Data berhasil diperbarui" });
     } catch (err) {
       res.status(400).json({ message: "Gagal memperbarui data", error: err });
     }
@@ -76,14 +85,21 @@ class CarController {
   static async deleteCars(req, res, next) {
     const id = req.params.id;
     try {
-      const result = await cars.destroy({ where: { id: id } });
-      if (result == 1) {
+      const car = await cars.findByPk(id);
+      if (car) {
+        const imagePath = path.join(__dirname, "../public", car.image);
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            console.error("Failed to delete image:", err);
+          }
+        });
+        await cars.destroy({ where: { id: id } });
         res.redirect("/");
       } else {
-        res.send({ message: `cannot delete id=${id}` });
+        res.status(400).json({ message: "Data tidak ditemukan" });
       }
     } catch (err) {
-      res.status(400).send(err);
+      res.status(400).json({ message: "Gagal menghapus data", error: err });
     }
   }
 }
