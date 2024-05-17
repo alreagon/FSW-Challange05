@@ -96,10 +96,10 @@ class CarController {
         await cars.destroy({ where: { id: id } });
         res.redirect("/");
       } else {
-        res.status(400).json({ message: "Data tidak ditemukan" });
+        res.status(400).json({ message: "Data not found!" });
       }
     } catch (err) {
-      res.status(400).json({ message: "Gagal menghapus data", error: err });
+      res.status(400).json({ message: "Failed to delete image", error: err });
     }
   }
 }
