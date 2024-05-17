@@ -1,12 +1,11 @@
-const { cars } = require("../models");
+const { Cars } = require("../models");
 const fs = require("fs");
 const path = require("path");
 
 class CarController {
-  // Add cars
-  static async addCars(req, res, next) {
+  static async addCars(req, res) {
     try {
-      await cars.create({
+      await Cars.create({
         name: req.body.name,
         rentPrice: req.body.rentPrice,
         type: req.body.type,
@@ -18,21 +17,18 @@ class CarController {
     }
   }
 
-  // Get all cars
-  static async getAllCars(req, res, next) {
+  static async getAllCars(req, res) {
     try {
-      const result = await cars.findAll();
+      const result = await Cars.findAll();
       res.render("cars/index", { ListCars: result, url: "/", title: "" });
     } catch (err) {
       res.status(400).send(err);
     }
   }
 
-  // Edit cars
-  static async editCars(req, res, next) {
-    const id = req.params.id;
+  static async editCars(req, res) {
     try {
-      const result = await cars.findByPk(id);
+      const result = await Cars.findByPk(req.params.id);
       res.render("cars/updateCar", {
         data: result,
         url: req.url,
@@ -43,36 +39,25 @@ class CarController {
     }
   }
 
-  // Update cars
-  static async updateCars(req, res, next) {
-    const id = req.params.id;
+  static async updateCars(req, res) {
     try {
-      const car = await cars.findByPk(id);
-      const existingImage = car.image;
-      const newImage = req.file
-        ? `/upload/${req.file.filename}`
-        : existingImage;
+      const car = await Cars.findByPk(req.params.id);
+      const newImage = req.file ? `/upload/${req.file.filename}` : car.image;
 
-      // Hapus gambar lama jika ada gambar baru
-      if (req.file && existingImage) {
-        const oldImagePath = path.join(__dirname, "../public", existingImage);
-        fs.unlink(oldImagePath, (err) => {
-          if (err) {
-            console.error("Failed to delete old image:", err);
-          }
+      if (req.file && car.image) {
+        fs.unlink(path.join(__dirname, "../public", car.image), (err) => {
+          if (err) console.error("Failed to delete old image:", err);
         });
       }
 
-      await cars.update(
+      await Cars.update(
         {
           name: req.body.name,
           rentPrice: req.body.rentPrice,
           type: req.body.type,
           image: newImage,
         },
-        {
-          where: { id: id },
-        }
+        { where: { id: req.params.id } }
       );
 
       res.status(200).json({ message: "Data berhasil diperbarui" });
@@ -81,19 +66,14 @@ class CarController {
     }
   }
 
-  // Delete cars
-  static async deleteCars(req, res, next) {
-    const id = req.params.id;
+  static async deleteCars(req, res) {
     try {
-      const car = await cars.findByPk(id);
+      const car = await Cars.findByPk(req.params.id);
       if (car) {
-        const imagePath = path.join(__dirname, "../public", car.image);
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            console.error("Failed to delete image:", err);
-          }
+        fs.unlink(path.join(__dirname, "../public", car.image), (err) => {
+          if (err) console.error("Failed to delete image:", err);
         });
-        await cars.destroy({ where: { id: id } });
+        await Cars.destroy({ where: { id: req.params.id } });
         res.redirect("/");
       } else {
         res.status(400).json({ message: "Data not found!" });
