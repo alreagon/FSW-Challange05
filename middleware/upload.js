@@ -15,12 +15,14 @@ const fileFilter = (req, file, cb) => {
     file.mimetype === "image/png" ||
     file.mimetype === "image/jpg" ||
     file.mimetype === "image/jpeg" ||
-    file.mimetype === "image/svg"
+    file.mimetype === "image/svg+xml"
   ) {
     cb(null, true);
   } else {
     cb(
-      new Error("Invalid file type. Only PNG, JPG, JPEG, and SVG are allowed."),
+      new Error(
+        "Tipe file tidak valid. Hanya PNG, JPG, JPEG, dan SVG yang diperbolehkan."
+      ),
       false
     );
   }
